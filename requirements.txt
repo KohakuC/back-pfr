@@ -10,3 +10,5 @@ django-filter==23.5
 weasyprint==61.2
 pydyf==0.10.0
 dj-database-url==2.3.0
+whitenoise==6.8.2
+gunicorn
