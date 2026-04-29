@@ -172,6 +172,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
     "http://localhost:8080",
+    os.environ.get('FRONTEND_URL', ''),
 ]
 
 CORS_ALLOW_CREDENTIALS = True
