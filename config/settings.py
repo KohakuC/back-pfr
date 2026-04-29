@@ -6,9 +6,12 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-11=oerv4b&arfv!re+)ebmzn$%=lmmq+^*urjp&11)o41&%o!x'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+# Reads SECRET_KEY from environment variables instead of hardcoding it
+SECRET_KEY = os.environ.get('SECRET_KEY', 'xxx')
+# DEBUG is False in production (when DEBUG=0 in Render), True in dev (when DEBUG=1)
+DEBUG = os.environ.get('DEBUG', '0') == '1'
+# Reads ALLOWED_HOSTS from environment variables
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
