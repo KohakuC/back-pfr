@@ -11,7 +11,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-11=oerv4b&arfv!re+)eb
 # DEBUG is False in production (when DEBUG=0 in Render), True in dev (when DEBUG=1)
 DEBUG = os.environ.get('DEBUG', '0') == '1'
 # Reads ALLOWED_HOSTS from environment variables
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
