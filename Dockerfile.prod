@@ -23,5 +23,5 @@ COPY . /app/
 
 EXPOSE 8000
 
-# Starts gunicorn on Render's default port
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:10000", "--workers", "2", "--timeout", "120", "--log-level", "debug"]
+# Production server with gunicorn
+CMD ["sh", "-c", "python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
