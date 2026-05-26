@@ -1,6 +1,19 @@
 from rest_framework import serializers
 from django.apps import apps
 
+"""
+Serializers for the clients app.
+
+A serializer converts Django model instances to JSON format (and vice versa),
+and handles data validation before saving to the database.
+
+This module contains:
+- AddressNestedSerializer: address serializer embedded inside ClientSerializer
+- AddressSerializer: standalone serializer for the /addresses/ endpoints
+- ClientSerializer: main serializer for the Client model, handles nested 
+  address creation and update
+"""
+
 class AddressNestedSerializer(serializers.ModelSerializer):
     """Serializer for addresses nested inside ClientSerializer"""
     class Meta:
