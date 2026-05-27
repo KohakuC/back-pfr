@@ -5,6 +5,18 @@ from clients.models import Client
 from accounts.models import UserConfiguration
 from .models import Quote, QuoteLine, QuoteHistory
 
+"""
+Serializers for the quotes app.
+
+A serializer converts Django model instances to JSON format (and vice versa),
+and handles data validation before saving to the database.
+
+This module contains:
+- QuoteLineSerializer: serializes the lines of a quote
+- QuoteHistorySerializer: serializer for the quote status history (tracks status changes with timestamps)
+- QuoteSerializer: main serializer, handles line deletion and recreation, and total calculation
+"""
+
 
 class QuoteLineSerializer(serializers.ModelSerializer):
     class Meta:
