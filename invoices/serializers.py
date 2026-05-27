@@ -6,6 +6,19 @@ from .models import Invoice, InvoiceLine, InvoiceHistory
 from clients.models import Client
 from clients.serializers import ClientSerializer
 
+"""
+Serializers for the invoices app.
+
+A serializer converts Django model instances to JSON format (and vice versa),
+and handles data validation before saving to the database.
+
+This module contains:
+- InvoiceLineSerializer: serializes the lines of an invoice
+- InvoiceHistorySerializer: serializer for the invoice status history (tracks status changes with timestamps)
+- InvoiceSerializer: main serializer, with line synchronization and total calculation
+- InvoiceFromQuoteSerializer: creates an invoice from an accepted quote (uses base Serializer instead of ModelSerializer as it is not tied to a single model)
+"""
+
 
 class InvoiceLineSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
