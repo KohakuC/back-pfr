@@ -46,14 +46,20 @@ class DashboardStatsView(APIView):
 
     @staticmethod
     def _monthly_revenue(user, year):
+        # Get the total of paid invoices for each month of the year
         rows = (
             Invoice.objects
             .filter(utilisateur=user, statut=Invoice.STATUT_PAYEE, date_emission__year=year)
+            # Add the month number to each invoice (1=Jan, 2=Feb, etc.)
             .annotate(month=ExtractMonth('date_emission'))
+            # Group by month
             .values('month')
+            # Calculate the total for each month
             .annotate(total=Sum('total_ttc'))
         )
+        # Create a dictionary {month_number: total} for quick lookup
         totals_by_month = {r['month']: r['total'] or Decimal('0') for r in rows}
+        # Return a list of 12 months with their totals (0 if no invoices that month)
         return [
             {"month": MONTHS[i], "total": totals_by_month.get(i + 1, Decimal('0'))}
             for i in range(12)
@@ -61,6 +67,7 @@ class DashboardStatsView(APIView):
 
     @staticmethod
     def _monthly_profit(user, year, month):
+        # Add up all paid invoices for the current month into a single total
         total = (
             Invoice.objects
             .filter(
@@ -69,40 +76,50 @@ class DashboardStatsView(APIView):
                 date_emission__year=year,
                 date_emission__month=month,
             )
-            .aggregate(s=Sum('total_ttc'))['s']
+            .aggregate(s=Sum('total_ttc'))['s']  # Sum all total_ttc into one number
         )
+        # Return 0 if no paid invoices found
         return total or Decimal('0')
 
     @staticmethod
     def _pending_total(user):
+        # Add up all accepted quotes into a single total
         quotes_total = (
             Quote.objects
             .filter(utilisateur=user, statut=Quote.STATUT_ACCEPTE)
             .aggregate(s=Sum('total_ttc'))['s']
-        ) or Decimal('0')
+        ) or Decimal('0')   # Return 0 if no accepted quotes found
+
+        # Add up all sent or overdue invoices into a single total
         invoices_total = (
             Invoice.objects
             .filter(utilisateur=user, statut__in=[Invoice.STATUT_ENVOYEE, Invoice.STATUT_EN_RETARD])
             .aggregate(s=Sum('total_ttc'))['s']
-        ) or Decimal('0')
+        ) or Decimal('0')   # Return 0 if no sent or overdue invoices found
+
+        # Return the combined total of quotes and invoices
         return quotes_total + invoices_total
 
     @staticmethod
     def _upcoming_deadlines(user):
         today = timezone.localdate()
+        # Get the 10 nearest deadlines for sent invoices
         invoice_deadlines = (
             Invoice.objects
             .filter(utilisateur=user, statut=Invoice.STATUT_ENVOYEE, date_echeance__gte=today)
-            .select_related('client')
+            .select_related('client')    # Fetch client data in the same query to avoid extra database calls
             .order_by('date_echeance')[:DEADLINES_LIMIT]
         )
+
+        # Get the 10 nearest deadlines for sent quotes
         quote_deadlines = (
             Quote.objects
             .filter(utilisateur=user, statut=Quote.STATUT_ENVOYE, date_validite__gte=today)
-            .select_related('client')
+            .select_related('client')    # Fetch client data in the same query to avoid extra database calls
             .order_by('date_validite')[:DEADLINES_LIMIT]
         )
 
+        # Merge invoices and quotes into a single list with a common format
         merged = [
             {
                 "id": inv.id,
@@ -125,17 +142,23 @@ class DashboardStatsView(APIView):
             for q in quote_deadlines
         ]
 
+        # Sort the merged list by date ascending
         merged.sort(key=lambda d: d["date"])
+
+        # Return only the 10 nearest deadlines
         return merged[:DEADLINES_LIMIT]
 
     @staticmethod
     def _last_transactions(user):
+        # Get the 10 most recently paid invoices
         invoices = (
             Invoice.objects
             .filter(utilisateur=user, statut=Invoice.STATUT_PAYEE)
-            .select_related('client')
-            .order_by('-updated_at')[:TRANSACTIONS_LIMIT]
+            .select_related('client')    # Fetch client data in the same query to avoid extra database calls
+            .order_by('-updated_at')[:TRANSACTIONS_LIMIT]    # Most recent first
         )
+
+        # Return a simplified list with only the needed fields
         return [
             {
                 "id": inv.id,
